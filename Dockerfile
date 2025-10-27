@@ -16,18 +16,18 @@ RUN mvn clean package -DskipTests
 # ------------------
 FROM tomcat:9.0-jre17-temurin-jammy 
 
-# 1. Access the output of the build stage
-# We define a temporary directory and copy the WAR file into it.
+# CRITICAL FIX: Install unzip utility, as it's not present in the base image.
+RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
+
+# 1. Access the output of the build stage and copy the WAR file into a temporary location.
 WORKDIR /tmp_app
 COPY --from=build /app/target/photo-gallery-app-1.0-SNAPSHOT.war .
 
 # 2. Extract the WAR contents into Tomcat's webapps/ROOT folder.
-# We run the unzip command here to ensure the directory structure is fully realized 
-# inside the final image layer.
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT && \
     unzip photo-gallery-app-1.0-SNAPSHOT.war -d /usr/local/tomcat/webapps/ROOT
 
-# 3. Clean up the temporary directory
+# 3. Clean up the temporary directory (optional, but good practice)
 RUN rm -rf /tmp_app
 
 # Set the port Render will expose
