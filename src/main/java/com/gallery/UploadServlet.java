@@ -42,6 +42,7 @@ public class UploadServlet extends HttpServlet {
             } catch (IOException e) {
                 System.err.println("Error creating upload directory: " + e.getMessage());
                 request.setAttribute("error", "Server failed to create the necessary directory.");
+                // FIX APPLIED: Uses relative path "upload.jsp"
                 request.getRequestDispatcher("upload.jsp").forward(request, response);
                 return;
             }
@@ -54,6 +55,7 @@ public class UploadServlet extends HttpServlet {
             
             if (fileName == null || fileName.isEmpty()) {
                 request.setAttribute("error", "No file selected for upload.");
+                // FIX APPLIED: Uses relative path "upload.jsp"
                 request.getRequestDispatcher("upload.jsp").forward(request, response);
                 return;
             }
@@ -74,6 +76,7 @@ public class UploadServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("Upload failed: " + e.getMessage());
             request.setAttribute("error", "Upload failed: " + e.getMessage());
+            // FIX APPLIED: Uses relative path "upload.jsp"
             request.getRequestDispatcher("upload.jsp").forward(request, response);
         }
     }
