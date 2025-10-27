@@ -29,6 +29,5 @@
 
     <welcome-file-list>
         <welcome-file>gallery</welcome-file>
-        <welcome-file>gallery.jsp</welcome-file>
     </welcome-file-list>
 </web-app>
