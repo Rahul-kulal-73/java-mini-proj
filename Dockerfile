@@ -8,6 +8,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
+# This creates target/photo-gallery-app-1.0-SNAPSHOT.war
 RUN mvn clean package -DskipTests
 
 # ------------------
@@ -15,12 +16,20 @@ RUN mvn clean package -DskipTests
 # ------------------
 FROM tomcat:9.0-jre17-temurin-jammy 
 
-# 1. COPY THE WAR FILE (using the corrected path)
-COPY --from=build /app/target/photo-gallery-app-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
+# REMOVE the old COPY command. 
+# We're now copying the extracted contents to the ROOT directory.
 
-# 2. COPY THE CONTEXT FILE (Crucial for forcing annotation scanning)
-# Assumes tomcat-config/context.xml is in your project root
-COPY tomcat-config/context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
+# 🌟 NEW, RELIABLE COPY METHOD: Extracting WAR contents to ROOT
+# 1. Create a directory to hold the extracted WAR contents (temporary location inside the build image)
+RUN mkdir -p /app-exploded
+
+# 2. Unzip the WAR file into the temporary directory
+# This assumes the WAR is a standard zip/jar file structure
+RUN unzip /app/target/photo-gallery-app-1.0-SNAPSHOT.war -d /app-exploded
+
+# 3. Copy the extracted application content directly into Tomcat's ROOT folder
+# This forces the application to load at the root context (/)
+COPY --from=build /app-exploded /usr/local/tomcat/webapps/ROOT
 
 # Set the port Render will expose
 EXPOSE 8080
