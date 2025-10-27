@@ -16,20 +16,19 @@ RUN mvn clean package -DskipTests
 # ------------------
 FROM tomcat:9.0-jre17-temurin-jammy 
 
-# REMOVE the old COPY command. 
-# We're now copying the extracted contents to the ROOT directory.
+# 1. Access the output of the build stage
+# We define a temporary directory and copy the WAR file into it.
+WORKDIR /tmp_app
+COPY --from=build /app/target/photo-gallery-app-1.0-SNAPSHOT.war .
 
-# 🌟 NEW, RELIABLE COPY METHOD: Extracting WAR contents to ROOT
-# 1. Create a directory to hold the extracted WAR contents (temporary location inside the build image)
-RUN mkdir -p /app-exploded
+# 2. Extract the WAR contents into Tomcat's webapps/ROOT folder.
+# We run the unzip command here to ensure the directory structure is fully realized 
+# inside the final image layer.
+RUN mkdir -p /usr/local/tomcat/webapps/ROOT && \
+    unzip photo-gallery-app-1.0-SNAPSHOT.war -d /usr/local/tomcat/webapps/ROOT
 
-# 2. Unzip the WAR file into the temporary directory
-# This assumes the WAR is a standard zip/jar file structure
-RUN unzip /app/target/photo-gallery-app-1.0-SNAPSHOT.war -d /app-exploded
-
-# 3. Copy the extracted application content directly into Tomcat's ROOT folder
-# This forces the application to load at the root context (/)
-COPY --from=build /app-exploded /usr/local/tomcat/webapps/ROOT
+# 3. Clean up the temporary directory
+RUN rm -rf /tmp_app
 
 # Set the port Render will expose
 EXPOSE 8080
