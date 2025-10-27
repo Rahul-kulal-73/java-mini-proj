@@ -10,13 +10,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// *** UPDATED TO JAKARTA EE IMPORTS ***
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-// ************************************
 
 @WebServlet("/gallery")
 public class GalleryServlet extends HttpServlet {
@@ -52,7 +50,8 @@ public class GalleryServlet extends HttpServlet {
         // Pass the list of image names to the JSP
         request.setAttribute("imageNames", imageNames);
 
-        // Forward the request to the gallery JSP for rendering
-        request.getRequestDispatcher("/gallery.jsp").forward(request, response);
+        // *** FIX APPLIED: Removed the leading slash (/) ***
+        // This ensures the path is relative and resolves correctly within the application root.
+        request.getRequestDispatcher("gallery.jsp").forward(request, response);
     }
 }
