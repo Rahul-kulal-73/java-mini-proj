@@ -7,33 +7,27 @@
     
     <display-name>SimplePhotoGallery</display-name>
 
-    <!-- 1. DEFINE: GalleryServlet -->
+    <!-- Servlet Definitions (Kept for mapping integrity) -->
     <servlet>
         <servlet-name>GalleryServlet</servlet-name>
         <servlet-class>com.gallery.GalleryServlet</servlet-class>
     </servlet>
-    
-    <!-- 2. MAPPING: Map /gallery to the GalleryServlet class -->
     <servlet-mapping>
         <servlet-name>GalleryServlet</servlet-name>
         <url-pattern>/gallery</url-pattern>
     </servlet-mapping>
-
-    <!-- 3. DEFINE: UploadServlet -->
+    
     <servlet>
         <servlet-name>UploadServlet</servlet-name>
         <servlet-class>com.gallery.UploadServlet</servlet-class>
     </servlet>
-    
-    <!-- 4. MAPPING: Map /upload to the UploadServlet class -->
     <servlet-mapping>
         <servlet-name>UploadServlet</servlet-name>
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
 
-    <!-- 5. WELCOME FILE: Direct root (/) access to the /gallery mapping -->
+    <!-- 🌟 FINAL TEST: Load the JSP file directly at the root (/) -->
     <welcome-file-list>
-        <!-- This must match the URL pattern defined above -->
-        <welcome-file>gallery</welcome-file>
+        <welcome-file>gallery.jsp</welcome-file>
     </welcome-file-list>
 </web-app>
