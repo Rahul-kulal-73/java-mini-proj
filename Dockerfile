@@ -12,7 +12,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 # Copy the rest of the source code
 COPY src ./src
-# Build the WAR file (the 'package' goal runs 'compile' and creates the .war)
+# Build the WAR file (this creates target/photo-gallery-app-1.0-SNAPSHOT.war)
 RUN mvn clean package -DskipTests
 
 # ------------------
@@ -21,9 +21,9 @@ RUN mvn clean package -DskipTests
 # This image tag is generally reliable:
 FROM tomcat:9.0-jre17-temurin-jammy 
 
-# Copy the WAR file from the build stage into Tomcat's webapps directory
-# The name 'photo-gallery-app.war' comes from your pom.xml <artifactId>
-COPY --from=build /app/target/photo-gallery-app.war /usr/local/tomcat/webapps/ROOT.war
+# CORRECTED COPY COMMAND: 
+# Must include the version and SNAPSHOT from pom.xml: photo-gallery-app-1.0-SNAPSHOT.war
+COPY --from=build /app/target/photo-gallery-app-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
 # Set the port Render will expose (Tomcat's default port)
 EXPOSE 8080
