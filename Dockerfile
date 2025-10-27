@@ -1,7 +1,10 @@
 # ------------------
-# STEP 1: Build Stage (Uses Maven to compile and package the application)
+# STEP 1: Build Stage (Uses Maven 3 with OpenJDK 17)
+# Use a known working tag that combines Maven and JDK 17
 # ------------------
-FROM maven:3.8.6-openjdk-17-slim AS build
+FROM maven:3.9.6-openjdk-17 AS build 
+# NOTE: The tag was changed from 3.8.6-openjdk-17-slim to 3.9.6-openjdk-17
+
 # Set the current working directory inside the container
 WORKDIR /app
 # Copy the pom.xml file first to cache dependencies
@@ -14,10 +17,10 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ------------------
-# STEP 2: Production Stage (Uses a smaller Java runtime environment)
+# STEP 2: Production Stage (Uses Tomcat/JRE 17)
 # ------------------
-# Use a lightweight official Tomcat image (which already includes the Servlet container)
-FROM tomcat:9.0-jre17-temurin-jammy
+# This image tag is generally reliable:
+FROM tomcat:9.0-jre17-temurin-jammy 
 
 # Copy the WAR file from the build stage into Tomcat's webapps directory
 # The name 'photo-gallery-app.war' comes from your pom.xml <artifactId>
