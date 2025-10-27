@@ -1,9 +1,8 @@
 # ------------------
 # STEP 1: Build Stage (Uses Maven 3 with OpenJDK 17)
-# Use a known working tag that combines Maven and JDK 17
+# Use the widely available 'maven:3-openjdk-17' tag
 # ------------------
-FROM maven:3.9.6-openjdk-17 AS build 
-# NOTE: The tag was changed from 3.8.6-openjdk-17-slim to 3.9.6-openjdk-17
+FROM maven:3-openjdk-17 AS build 
 
 # Set the current working directory inside the container
 WORKDIR /app
