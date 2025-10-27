@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-// *** UPDATED TO JAKARTA EE IMPORTS ***
+// *** JAKARTA EE IMPORTS ***
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-// ************************************
+// *************************
 
 // Mandatory annotation for handling file uploads (multipart/form-data)
 @WebServlet("/upload")
@@ -27,6 +27,19 @@ public class UploadServlet extends HttpServlet {
     
     // Directory relative to the web application root where files are saved
     private static final String UPLOAD_DIR = "uploaded_images";
+
+    /**
+     * Handles GET requests to display the upload form.
+     * This is the crucial fix for the "404 Not Found" error when manually
+     * navigating to the /upload URL. It forwards the request to the JSP view.
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        // Forward the request to the upload JSP page (using the corrected relative path)
+        request.getRequestDispatcher("upload.jsp").forward(request, response);
+    }
+
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -42,8 +55,8 @@ public class UploadServlet extends HttpServlet {
             } catch (IOException e) {
                 System.err.println("Error creating upload directory: " + e.getMessage());
                 request.setAttribute("error", "Server failed to create the necessary directory.");
-                // FIX APPLIED: Uses relative path "upload.jsp"
-                request.getRequestDispatcher("upload.jsp").forward(request, response);
+                // Forward on error (using correct relative path)
+                request.getRequestDispatcher("upload.jsp").forward(request, response); 
                 return;
             }
         }
@@ -55,7 +68,7 @@ public class UploadServlet extends HttpServlet {
             
             if (fileName == null || fileName.isEmpty()) {
                 request.setAttribute("error", "No file selected for upload.");
-                // FIX APPLIED: Uses relative path "upload.jsp"
+                // Forward on error (using correct relative path)
                 request.getRequestDispatcher("upload.jsp").forward(request, response);
                 return;
             }
@@ -71,12 +84,13 @@ public class UploadServlet extends HttpServlet {
             
             // Set a success message in the session and redirect to the gallery
             request.getSession().setAttribute("uploadMessage", "Image '" + fileName + "' uploaded successfully!");
+            // Redirect to the gallery servlet path (which triggers doGet in GalleryServlet)
             response.sendRedirect("gallery");
 
         } catch (Exception e) {
             System.err.println("Upload failed: " + e.getMessage());
             request.setAttribute("error", "Upload failed: " + e.getMessage());
-            // FIX APPLIED: Uses relative path "upload.jsp"
+            // Forward on exception (using correct relative path)
             request.getRequestDispatcher("upload.jsp").forward(request, response);
         }
     }
