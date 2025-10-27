@@ -1,57 +1,34 @@
-package com.gallery;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-@WebServlet("/gallery")
-public class GalleryServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
+                        https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+    version="5.0">
     
-    private static final String UPLOAD_DIR = "uploaded_images";
+    <display-name>SimplePhotoGallery</display-name>
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        String applicationPath = request.getServletContext().getRealPath("");
-        Path uploadPath = Paths.get(applicationPath, UPLOAD_DIR);
-        
-        List<String> imageNames = new ArrayList<>();
+    <!-- Servlet Definitions (KEEP THEM HERE) -->
+    <servlet>
+        <servlet-name>GalleryServlet</servlet-name>
+        <servlet-class>com.gallery.GalleryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GalleryServlet</servlet-name>
+        <url-pattern>/gallery</url-pattern>
+    </servlet-mapping>
 
-        if (Files.exists(uploadPath) && Files.isDirectory(uploadPath)) {
-            try (Stream<Path> files = Files.list(uploadPath)) {
-                // Filter for regular files and get their names
-                imageNames = files
-                    .filter(file -> Files.isRegularFile(file))
-                    .map(file -> file.getFileName().toString())
-                    .collect(Collectors.toList());
-                
-                // Sort the files for a consistent display order
-                Collections.sort(imageNames);
-                
-            } catch (IOException e) {
-                System.err.println("Error reading upload directory: " + e.getMessage());
-                request.setAttribute("error", "Could not read gallery images.");
-            }
-        } 
+    <servlet>
+        <servlet-name>UploadServlet</servlet-name>
+        <servlet-class>com.gallery.UploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UploadServlet</servlet-name>
+        <url-pattern>/upload</url-pattern>
+    </servlet-mapping>
 
-        // Pass the list of image names to the JSP
-        request.setAttribute("imageNames", imageNames);
-
-        // *** FIX APPLIED: Removed the leading slash (/) ***
-        // This ensures the path is relative and resolves correctly within the application root.
-        request.getRequestDispatcher("gallery.jsp").forward(request, response);
-    }
-}
+    <!-- CRITICAL CHANGE: Pointing directly to the JSP file -->
+    <welcome-file-list>
+        <!-- This attempts to load the raw file: /gallery.jsp -->
+        <welcome-file>gallery.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>
