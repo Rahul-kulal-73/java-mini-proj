@@ -1,120 +1,101 @@
 package com.gallery;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.InputStream; // Keep for getPart()
+// Removed file system imports (Path, Paths, Files, StandardCopyOption)
 
-// *** SWITCHED TO JAVAX IMPORTS ***
+// Use JAVAX imports
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part; // Note: Part is javax.servlet.http.Part
-// **********************************
+import javax.servlet.http.Part; // Keep for getPart()
 
-// ... (Your code logic is fine, only the imports are critical)
-// *************************
-
-// Mandatory annotation for handling file uploads (multipart/form-data)
 @WebServlet("/upload")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
                  maxFileSize = 1024 * 1024 * 10,     // 10MB
                  maxRequestSize = 1024 * 1024 * 50)  // 50MB
 public class UploadServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    
-    // Directory relative to the web application root where files are saved
+
+    // UPLOAD_DIR constant is temporarily unused
     private static final String UPLOAD_DIR = "uploaded_images";
 
     /**
      * Handles GET requests to display the upload form.
-     * This is the crucial fix for the "404 Not Found" error when manually
-     * navigating to the /upload URL. It forwards the request to the JSP view.
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Forward the request to the upload JSP page (using the corrected relative path)
         request.getRequestDispatcher("upload.jsp").forward(request, response);
     }
 
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Get the absolute path to the web application root
-        String applicationPath = request.getServletContext().getRealPath("");
-        Path uploadPath = Paths.get(applicationPath, UPLOAD_DIR);
-        
-        // Ensure the upload directory exists
-        if (!Files.exists(uploadPath)) {
-            try {
-                Files.createDirectories(uploadPath);
-            } catch (IOException e) {
-                System.err.println("Error creating upload directory: " + e.getMessage());
-                request.setAttribute("error", "Server failed to create the necessary directory.");
-                // Forward on error (using correct relative path)
-                request.getRequestDispatcher("upload.jsp").forward(request, response); 
-                return;
-            }
-        }
+
+        // --- SIMPLIFIED LOGIC ---
+        // Temporarily skip all file system operations
+
+        // String applicationPath = request.getServletContext().getRealPath("");
+        // Path uploadPath = Paths.get(applicationPath, UPLOAD_DIR);
+
+        // if (!Files.exists(uploadPath)) {
+        //     try {
+        //         Files.createDirectories(uploadPath);
+        //     } catch (IOException e) {
+        //         System.err.println("Error creating upload directory: " + e.getMessage());
+        //         request.setAttribute("error", "Server failed to create the necessary directory.");
+        //         request.getRequestDispatcher("upload.jsp").forward(request, response);
+        //         return;
+        //     }
+        // }
 
         try {
-            // Get the file part named "imageFile"
             Part filePart = request.getPart("imageFile");
             String fileName = getFileName(filePart);
-            
+
             if (fileName == null || fileName.isEmpty()) {
                 request.setAttribute("error", "No file selected for upload.");
-                // Forward on error (using correct relative path)
                 request.getRequestDispatcher("upload.jsp").forward(request, response);
                 return;
             }
-            
+
             fileName = sanitizeFileName(fileName);
 
-            // Save the file
-            try (InputStream fileContent = filePart.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName);
-                // Copy the input stream to the target file path, replacing if it exists
-                Files.copy(fileContent, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
-            
-            // Set a success message in the session and redirect to the gallery
-            request.getSession().setAttribute("uploadMessage", "Image '" + fileName + "' uploaded successfully!");
-            // Redirect to the gallery servlet path (which triggers doGet in GalleryServlet)
-            response.sendRedirect("gallery");
+            // Temporarily skip saving the file
+            // try (InputStream fileContent = filePart.getInputStream()) {
+            //     Path filePath = uploadPath.resolve(fileName);
+            //     Files.copy(fileContent, filePath, StandardCopyOption.REPLACE_EXISTING);
+            // }
 
-        } catch (Exception e) {
-            System.err.println("Upload failed: " + e.getMessage());
-            request.setAttribute("error", "Upload failed: " + e.getMessage());
-            // Forward on exception (using correct relative path)
+            // --- END SIMPLIFICATION ---
+
+            // Still redirect, but pretend the upload worked
+            request.getSession().setAttribute("uploadMessage", "Image '" + fileName + "' (simulated upload) received!");
+            response.sendRedirect("gallery"); // Redirect back to the GalleryServlet
+
+        } catch (Exception e) { // Catch potential errors from getPart etc.
+            System.err.println("Processing upload failed (before file saving): " + e.getMessage());
+            request.setAttribute("error", "Processing upload failed: " + e.getMessage());
             request.getRequestDispatcher("upload.jsp").forward(request, response);
         }
     }
 
-    /**
-     * Extracts file name from HTTP header content-disposition
-     */
     private String getFileName(Part part) {
-        for (String content : part.getHeader("content-disposition").split(";")) {
+        if (part == null) return null; // Add null check
+        String header = part.getHeader("content-disposition");
+        if (header == null) return null; // Add null check
+        for (String content : header.split(";")) {
             if (content.trim().startsWith("filename")) {
-                // Return the filename, removing quotes
                 return content.substring(content.indexOf('=') + 1).trim().replace("\"", "");
             }
         }
         return null;
     }
 
-    /**
-     * Simple sanitation to remove path components and replace spaces.
-     */
     private String sanitizeFileName(String fileName) {
+         if (fileName == null) return "unknown_file"; // Add null check
         // Remove path components (e.g., ../) and replace spaces with underscores
         return fileName.replaceAll("[\\\\/]", "").replaceAll("\\s+", "_");
     }
