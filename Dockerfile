@@ -7,7 +7,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
-# This now creates target/ROOT.war because of the finalName in pom.xml
+# This creates target/photo-gallery-app-1.0-SNAPSHOT.war
 RUN mvn clean package -DskipTests
 
 # ------------------
@@ -20,11 +20,11 @@ RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 
 # Copy and Extract the renamed WAR to ROOT
 WORKDIR /tmp_app
-# *** UPDATED: Copy target/ROOT.war ***
-COPY --from=build /app/target/ROOT.war .
+# *** UPDATED: Copy target/photo-gallery-app-1.0-SNAPSHOT.war ***
+COPY --from=build /app/target/photo-gallery-app-1.0-SNAPSHOT.war .
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT && \
-    # *** UPDATED: Unzip ROOT.war ***
-    unzip ROOT.war -d /usr/local/tomcat/webapps/ROOT
+    # *** UPDATED: Unzip photo-gallery-app-1.0-SNAPSHOT.war ***
+    unzip photo-gallery-app-1.0-SNAPSHOT.war -d /usr/local/tomcat/webapps/ROOT
 
 # DIAGNOSTIC: List contents to verify (optional but useful)
 RUN echo "--- Contents of /usr/local/tomcat/webapps/ROOT ---" && \
