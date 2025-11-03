@@ -7,7 +7,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
-# This now creates target/ROOT.war
+# This will create target/ROOT.war thanks to the pom.xml
 RUN mvn clean package -DskipTests
 
 # ------------------
@@ -15,10 +15,11 @@ RUN mvn clean package -DskipTests
 # ------------------
 FROM tomcat:9.0-jre17-temurin-jammy
 
-# No need to install unzip anymore
+# No unzip needed
 
 # Simply copy the built ROOT.war into Tomcat's deployment directory.
 # Tomcat will automatically deploy this at the root context (/).
+
 COPY --from=build /app/target/ROOT.war /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
