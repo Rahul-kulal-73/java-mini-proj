@@ -18,11 +18,11 @@ public class GalleryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Use simplified logic to prevent file system errors
+        // Use simplified logic to prevent file system errors on startup
         List<String> imageNames = Collections.emptyList();
         request.setAttribute("imageNames", imageNames);
         
-        // Use relative path
+        // Use relative path (no leading "/") to find the JSP
         request.getRequestDispatcher("gallery.jsp").forward(request, response);
     }
 }
